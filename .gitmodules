@@ -1,0 +1,3 @@
+[submodule "requirements/api/app"]
+	path = requirements/api/app
+	url = git@github.com:aufklaeranlage/ft_transcendence_django_api.git

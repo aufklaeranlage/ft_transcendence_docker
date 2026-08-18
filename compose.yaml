@@ -1,0 +1,46 @@
+services:
+  postgis:
+    image: postgis/postgis:18-3.6-alpine
+    expose:
+      - '5432'
+    # Need to set POSTGRES_PASSWORD, POSTGRES_USER, POSTGRES_DB to .env file
+    env_file: .env
+    volumes:
+      - db:/var/lib/postgresql
+    networks:
+      - backend
+
+    healthcheck:
+      test: ["CMD", "pg_isready", "--username=$POSTGRES_USER", "--dbname=$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api:
+    build: requirements/api
+    ports:
+      - '8000:8000'
+    env_file: .env
+    depends_on:
+      postgis:
+        condition: service_healthy
+    networks:
+      - backend
+
+    secrets:
+      - django-secret-key
+      - postgres-password
+
+volumes:
+  db:
+
+networks:
+  backend:
+    driver: bridge
+
+secrets:
+  postgres-password:
+    file: .secrets/postgres-password
+  django-secret-key:
+    file: .secrets/django-secret-key
